@@ -1,0 +1,108 @@
+
+package fr.usmb.m1isc.compilation.tp;
+import java_cup.runtime.Symbol;
+import java.util.HashMap;
+
+
+action code {: 
+    private HashMap<String,Integer> vars = new HashMap<>();
+    private boolean erreur = false;
+:};
+
+parser code {:
+    public void report_error(String message, Object info) {
+        String m = "";
+        if (info instanceof java_cup.runtime.Symbol) {
+            Symbol s = ((Symbol) info);     
+            if (s != null && s.left >= 0 ) {
+                m =  "Ligne " + (s.left+1) + ", Colonne " + (s.right+1) + " : ";
+            }
+        }
+        m = m + message;
+        System.err.println(m);
+    }
+:};
+ 
+init with {:
+:};
+
+terminal PLUS, MOINS, MOINS_UNAIRE, MUL, DIV, MOD, NOT, OR, AND, PAR_G, PAR_D, SEMI, POINT, LET, INPUT, OUTPUT, IF, THEN, ELSE, WHILE, DO, EGAL, GT, GTE, NIL, ERROR;
+terminal Integer ENTIER;
+terminal String IDENT;
+
+/* non terminaux */
+non terminal program, sequence, expression;
+non terminal Noeud expr;
+
+precedence nonassoc OUTPUT;
+precedence right OR;
+precedence right AND;
+precedence right NOT;
+precedence nonassoc EGAL;
+precedence nonassoc GT, GTE;
+precedence left PLUS, MOINS;
+precedence left MUL, DIV, MOD;
+precedence left MOINS_UNAIRE;
+
+/* grammaire */
+program ::= 
+    sequence:s POINT  
+    {: RESULT = new Noeud((Noeud) s, null, "."); :};
+
+/* Une sequence est une suite d'instructions */
+sequence ::= expression:e1 SEMI sequence:e2
+            {: RESULT = new Noeud((Noeud) e1,(Noeud) e2, ";"); :}
+            | expression:e
+            {: RESULT = e; :}
+            | 
+            {: RESULT = null; :};
+
+/* Une expression peut être une affectation ou une opération */
+expression ::= expr:e
+             {: RESULT = e; :}
+             | LET IDENT:nom EGAL expr:e
+             {: RESULT = new Noeud((Noeud) e, null, "LET " + nom + " ="); :}
+             | WHILE expr:cond DO expression:e
+             {: RESULT = new Noeud((Noeud) cond, (Noeud) e, "WHILE"); :}
+             | IF expr:cond THEN expression:a1 ELSE expression:a2
+             {: RESULT = new Noeud((Noeud) cond, new Noeud((Noeud) a1, (Noeud) a2, "IF-ELSE"), "IF"); :}
+             | error
+             {: RESULT = new Noeud(null, null, "ERROR"); :};
+
+/* Expressions arithmétiques et logiques */
+expr ::= NOT:op expr:e
+       {: RESULT = new Noeud(e, null, "NOT"); :}
+       | expr:e1 AND expr:e2
+       {: RESULT = new Noeud((Noeud) e1, (Noeud) e2, "AND"); :}
+       | expr:e1 OR expr:e2
+       {: RESULT = new Noeud((Noeud) e1, (Noeud) e2, "OR"); :}
+       | expr:e1 EGAL expr:e2
+       {: RESULT = new Noeud((Noeud) e1, (Noeud) e2, "EGAL"); :}
+       | expr:e1 GT expr:e2
+       {: RESULT = new Noeud((Noeud) e1, (Noeud) e2, "GT"); :}
+       | expr:e1 GTE expr:e2
+       {: RESULT = new Noeud((Noeud) e1, (Noeud) e2, "GTE"); :}
+       | expr:e1 PLUS expr:e2
+       {: RESULT = new Noeud((Noeud) e1, (Noeud) e2, "+"); :}
+       | expr:e1 MOINS expr:e2
+       {: RESULT = new Noeud((Noeud) e1, (Noeud) e2, "-"); :}
+       | expr:e1 MUL expr:e2
+       {: RESULT = new Noeud((Noeud) e1, (Noeud) e2, "*"); :}
+       | expr:e1 DIV expr:e2
+       {: RESULT = new Noeud((Noeud) e1, (Noeud) e2, "/"); :}
+       | expr:e1 MOD expr:e2
+       {: RESULT = new Noeud((Noeud) e1, (Noeud) e2, "%"); :}
+       | MOINS expr:e
+       {: RESULT = new Noeud((Noeud) e, null, "MOINS_UNAIRE"); :}
+       | OUTPUT expr:e
+       {: RESULT = new Noeud((Noeud) e, null, "OUTPUT"); :}
+       | INPUT
+       {: RESULT = new Noeud(null, null, "INPUT"); :}
+       | NIL
+       {: RESULT = new Noeud(null, null, "NIL"); :}
+       | ENTIER:n
+       {: RESULT = new Noeud(null, null, String.valueOf(n)); :}
+       | IDENT:id
+       {: RESULT = new Noeud(null, null, id); :}
+       | PAR_G sequence:e PAR_D
+       {: RESULT = (Noeud) e; :};
