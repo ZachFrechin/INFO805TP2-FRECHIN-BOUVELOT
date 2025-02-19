@@ -24,9 +24,9 @@ import java_cup.runtime.Symbol;
 chiffre     = [0-9]
 espace      = \s
 mod         = "%" | "mod"|"MOD"
-let         = "let"|"LET"
-while       = "while" | "WHILE"
-do          = "do" | "DO"
+let         = "pitie" | "let" | "LET"
+while       = "je t'en prie boucle en suiant mon commandement :" | "WHILE" | "while"
+do          = "do" | "DO" | "je vous prie d'executer :"
 if          = "if" | "IF"
 then        = "then" | "THEN"
 else        = "else" | "ELSE"
@@ -36,6 +36,8 @@ nil         = "nil" | "NIL"
 not         = "not" | "NOT"
 and         = "and" | "AND"
 or          = "or" | "OR"
+egal        = "=" | "devient"
+inferieur   = "<" | "est un etre inferieur a :"
 
 // un identifiant commence par une lettre suivit d'un charactere alphanumerique (lettre/chiffre/underscore)
 ident       = [:letter:]\w*
@@ -60,14 +62,17 @@ comment     = {comment1}|{comment2}
 {and}       { return new Symbol(sym.AND, yyline, yycolumn) ;}
 {or}        { return new Symbol(sym.OR, yyline, yycolumn) ;}
 {not}       { return new Symbol(sym.NOT, yyline, yycolumn) ;}
-"="         { return new Symbol(sym.EGAL, yyline, yycolumn) ;}
-"<"         { return new Symbol(sym.GT, yyline, yycolumn) ;}
+{egal}        { return new Symbol(sym.EGAL, yyline, yycolumn) ;}
+{inferieur}         { return new Symbol(sym.GT, yyline, yycolumn) ;}
 "<="        { return new Symbol(sym.GTE, yyline, yycolumn) ;}
+">"         { return new Symbol(sym.LT, yyline, yycolumn); }
+">="        { return new Symbol(sym.LTE, yyline, yycolumn); }
 "("         { return new Symbol(sym.PAR_G, yyline, yycolumn) ;}
 ")"         { return new Symbol(sym.PAR_D, yyline, yycolumn) ;}
 "+"         { return new Symbol(sym.PLUS, yyline, yycolumn) ;}
 "-"         { return new Symbol(sym.MOINS, yyline, yycolumn) ;}
 "/"         { return new Symbol(sym.DIV, yyline, yycolumn) ;}
+"!="         { return new Symbol(sym.NEQ, yyline, yycolumn) ;}
 {mod}       { return new Symbol(sym.MOD, yyline, yycolumn) ;}
 "*"         { return new Symbol(sym.MUL, yyline, yycolumn) ;}
 ";"         { return new Symbol(sym.SEMI, yyline, yycolumn) ;}

@@ -26,7 +26,7 @@ parser code {:
 init with {:
 :};
 
-terminal PLUS, MOINS, MOINS_UNAIRE, MUL, DIV, MOD, NOT, OR, AND, PAR_G, PAR_D, SEMI, POINT, LET, INPUT, OUTPUT, IF, THEN, ELSE, WHILE, DO, EGAL, GT, GTE, NIL, ERROR;
+terminal PLUS, MOINS, MOINS_UNAIRE, MUL, DIV, MOD, NOT, OR, AND, PAR_G, PAR_D, SEMI, POINT, LET, INPUT, OUTPUT, IF, THEN, ELSE, WHILE, DO, EGAL, GT, GTE, LT, LTE, NIL, ERROR, NEQ;
 terminal Integer ENTIER;
 terminal String IDENT;
 
@@ -39,7 +39,9 @@ precedence right OR;
 precedence right AND;
 precedence right NOT;
 precedence nonassoc EGAL;
+precedence nonassoc NEQ;
 precedence nonassoc GT, GTE;
+precedence nonassoc LT, LTE;
 precedence left PLUS, MOINS;
 precedence left MUL, DIV, MOD;
 precedence left MOINS_UNAIRE;
@@ -47,7 +49,7 @@ precedence left MOINS_UNAIRE;
 /* grammaire */
 program ::= 
     sequence:s POINT  
-    {: RESULT = new Noeud((Noeud) s, null, "."); :};
+    {: RESULT = s; :};
 
 /* Une sequence est une suite d'instructions */
 sequence ::= expression:e1 SEMI sequence:e2
@@ -61,7 +63,7 @@ sequence ::= expression:e1 SEMI sequence:e2
 expression ::= expr:e
              {: RESULT = e; :}
              | LET IDENT:nom EGAL expr:e
-             {: RESULT = new Noeud((Noeud) e, null, "LET " + nom + " ="); :}
+             {: RESULT = new Noeud(new Noeud(null, null, nom), (Noeud) e, "LET"); :}
              | WHILE expr:cond DO expression:e
              {: RESULT = new Noeud((Noeud) cond, (Noeud) e, "WHILE"); :}
              | IF expr:cond THEN expression:a1 ELSE expression:a2
@@ -78,10 +80,16 @@ expr ::= NOT:op expr:e
        {: RESULT = new Noeud((Noeud) e1, (Noeud) e2, "OR"); :}
        | expr:e1 EGAL expr:e2
        {: RESULT = new Noeud((Noeud) e1, (Noeud) e2, "EGAL"); :}
+       | expr:e1 NEQ expr:e2
+       {: RESULT = new Noeud((Noeud) e1, (Noeud) e2, "NEQ"); :}
        | expr:e1 GT expr:e2
        {: RESULT = new Noeud((Noeud) e1, (Noeud) e2, "GT"); :}
        | expr:e1 GTE expr:e2
        {: RESULT = new Noeud((Noeud) e1, (Noeud) e2, "GTE"); :}
+       | expr:e1 LT expr:e2
+       {: RESULT = new Noeud((Noeud) e1, (Noeud) e2, "LT"); :}
+       | expr:e1 LTE expr:e2
+       {: RESULT = new Noeud((Noeud) e1, (Noeud) e2, "LTE"); :}
        | expr:e1 PLUS expr:e2
        {: RESULT = new Noeud((Noeud) e1, (Noeud) e2, "+"); :}
        | expr:e1 MOINS expr:e2

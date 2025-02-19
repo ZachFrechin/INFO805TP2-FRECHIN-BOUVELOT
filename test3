@@ -1,0 +1,7 @@
+let a = input;
+let b = input;
+if (a < b) then
+(let aux = a + 1)
+else
+(let aux = b + 1);
+output aux.

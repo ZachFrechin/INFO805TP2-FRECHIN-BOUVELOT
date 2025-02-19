@@ -1,2 +1,6 @@
-let prixTtc =  prixHt * 119 / 100;
-prixTtc + 100.
+let a = input;
+let b = input;
+while (b != a)
+do (let b = input);
+output a
+.
